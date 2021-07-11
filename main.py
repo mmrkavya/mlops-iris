@@ -1,8 +1,10 @@
 import uvicorn
+import datetime
 from fastapi import FastAPI
 from pydantic import BaseModel
 from ml_utils import load_model, predict, retrain
 from typing import List
+
 
 # defining the main app
 app = FastAPI(title="Iris Predictor", docs_url="/")
@@ -22,6 +24,7 @@ class QueryIn(BaseModel):
 # class which is returned in the response
 class QueryOut(BaseModel):
     flower_class: str
+    timestamp: datetime.datetime
 
 # class which is expected in the payload while re-training
 class FeedbackIn(BaseModel):
@@ -31,28 +34,43 @@ class FeedbackIn(BaseModel):
     petal_width: float
     flower_class: str
 
+
+# class which is returned in the response for Feedback
+class FeedbackOut(BaseModel):
+    detail: str
+    timestamp: datetime.datetime
+
 # Route definitions
 @app.get("/ping")
 # Healthcheck route to ensure that the API is up and running
 def ping():
     return {"ping": "pong"}
 
-
-@app.post("/predict_flower", response_model=QueryOut, status_code=200)
+#Naive Bayes Classifier
+@app.post("/predict_flower_nb", response_model=QueryOut, status_code=200)
 # Route to do the prediction using the ML model defined.
 # Payload: QueryIn containing the parameters
 # Response: QueryOut containing the flower_class predicted (200)
 def predict_flower(query_data: QueryIn):
-    output = {"flower_class": predict(query_data)}
+    output = {"flower_class": predict(query_data,'NaiveBayes'),'timestamp': datetime.datetime.now()}
     return output
 
-@app.post("/feedback_loop", status_code=200)
+#RandomForest Classifier
+@app.post("/predict_flower_rfc", response_model=QueryOut, status_code=200)
+# Route to do the prediction using the ML model defined.
+# Payload: QueryIn containing the parameters
+# Response: QueryOut containing the flower_class predicted (200)
+def predict_flower(query_data: QueryIn):
+    output = {"flower_class": predict(query_data,'RandomForest'),'timestamp': datetime.datetime.now()}
+    return output
+
+@app.post("/feedback_loop", response_model=FeedbackOut,status_code=200)
 # Route to further train the model based on user input in form of feedback loop
 # Payload: FeedbackIn containing the parameters and correct flower class
 # Response: Dict with detail confirming success (200)
 def feedback_loop(data: List[FeedbackIn]):
     retrain(data)
-    return {"detail": "Feedback loop successful"}
+    return {"detail": "Feedback loop successful",'timestamp': datetime.datetime.now()}
 
 
 # Main function to start the app when main.py is called

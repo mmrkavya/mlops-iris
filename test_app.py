@@ -14,17 +14,23 @@ def test_ping():
 def test_pred_virginica():
     # defining a sample payload for the testcase
     payload = {
-        "sepal_length": 3,
-        "sepal_width": 5,
-        "petal_length": 3.2,
-        "petal_width": 4.4,
+        "sepal_length": 5.9,
+        "sepal_width": 3,
+        "petal_length": 5.1,
+        "petal_width": 1.8,
     }
     with TestClient(app) as client:
-        response = client.post("/predict_flower", json=payload)
+        #Naive Bayes
+        response = client.post("/predict_flower_nb", json=payload)
         # asserting the correct response is received
         assert response.status_code == 200
-        assert response.json() == {"flower_class": "Iris Virginica"}
-        # test to check if Iris Virginica is classified correctly
+        assert response.json()['flower_class'] == "Iris Virginica"
+        #random Forest
+        response = client.post("/predict_flower_rfc", json=payload)
+        # asserting the correct response is received
+        assert response.status_code == 200
+        assert response.json()['flower_class'] == "Iris Virginica"
+        #test to check if Iris Virginica is classified correctly
 def test_pred_sotosa():
     # defining a sample payload for the testcase
     payload = {
@@ -34,10 +40,17 @@ def test_pred_sotosa():
         "petal_width": 0.1
     }
     with TestClient(app) as client:
-        response = client.post("/predict_flower", json=payload)
+  #Naive Bayes
+        response = client.post("/predict_flower_nb", json=payload)
         # asserting the correct response is received
         assert response.status_code == 200
-        assert response.json() == {"flower_class": "Iris Setosa"}
+        assert response.json()['flower_class'] == "Iris Setosa"
+        #random Forest
+        response = client.post("/predict_flower_rfc", json=payload)
+        # asserting the correct response is received
+        assert response.status_code == 200
+        assert response.json()['flower_class'] == "Iris Setosa"
+        # test to check if Iris Virginica is classified correctly
 
 def test_pred_versicolour():
     # defining a sample payload for the testcase
@@ -48,10 +61,17 @@ def test_pred_versicolour():
         "petal_width": 1.5
     }
     with TestClient(app) as client:
-        response = client.post("/predict_flower", json=payload)
+  #Naive Bayes
+        response = client.post("/predict_flower_nb", json=payload)
         # asserting the correct response is received
         assert response.status_code == 200
-        assert response.json() == {"flower_class": "Iris Versicolour"}
+        assert response.json()['flower_class']== "Iris Versicolour"
+        #random Forest
+        response = client.post("/predict_flower_rfc", json=payload)
+        # asserting the correct response is received
+        assert response.status_code == 200
+        assert response.json()['flower_class']== "Iris Versicolour"
+        # test to check if Iris Virginica is classified correctly
 
 def test_pred_feedback():
     # defining a sample payload for the testcase
@@ -67,5 +87,5 @@ def test_pred_feedback():
         response = client.post("/feedback_loop", json=payload)
         # asserting the correct response is received
         assert response.status_code == 200
-        assert response.json() == {"detail": "Feedback loop successful"}
+        assert response.json()['detail']== "Feedback loop successful"
 
